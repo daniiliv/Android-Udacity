@@ -18,6 +18,9 @@ package com.example.android.sunshine;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -32,6 +35,8 @@ import com.example.android.sunshine.utilities.OpenWeatherJsonUtils;
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
+
+
 
     // Within forecast_list_item.xml //////////////////////////////////////////////////////////////
     // TODO (5) Add a layout for an item in the list called forecast_list_item.xml
@@ -85,7 +90,10 @@ public class MainActivity extends AppCompatActivity {
 
 
     // TODO (33) Delete mWeatherTextView
-    private TextView mWeatherTextView;
+
+    private RecyclerView mRecyclerView;
+
+    private ForecastAdapter mForecastAdapter;
 
     // TODO (34) Add a private RecyclerView variable called mRecyclerView
     // TODO (35) Add a private ForecastAdapter variable called mForecastAdapter
@@ -104,14 +112,25 @@ public class MainActivity extends AppCompatActivity {
          * Using findViewById, we get a reference to our TextView from xml. This allows us to
          * do things like set the text of the TextView.
          */
-        mWeatherTextView = (TextView) findViewById(R.id.tv_weather_data);
 
         // TODO (37) Use findViewById to get a reference to the RecyclerView
+
+        mRecyclerView = findViewById(R.id.recyclerview_forecast);
 
         /* This TextView is used to display errors and will be hidden if there are no errors */
         mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
 
         // TODO (38) Create layoutManager, a LinearLayoutManager with VERTICAL orientation and shouldReverseLayout == false
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+
+        mRecyclerView.setLayoutManager(layoutManager);
+
+        mRecyclerView.setHasFixedSize(true);
+
+        mForecastAdapter = new ForecastAdapter();
+
+        mRecyclerView.setAdapter(mForecastAdapter);
 
         // TODO (39) Set the layoutManager on mRecyclerView
 
@@ -157,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
         // TODO (43) Show mRecyclerView, not mWeatherTextView
         /* Then, make sure the weather data is visible */
-        mWeatherTextView.setVisibility(View.VISIBLE);
+        mRecyclerView.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -170,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
     private void showErrorMessage() {
         // TODO (44) Hide mRecyclerView, not mWeatherTextView
         /* First, hide the currently visible data */
-        mWeatherTextView.setVisibility(View.INVISIBLE);
+        mRecyclerView.setVisibility(View.INVISIBLE);
         /* Then, show the error */
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
@@ -220,9 +239,7 @@ public class MainActivity extends AppCompatActivity {
                  * the "\n\n\n" after the String is to give visual separation between each String in the
                  * TextView. Later, we'll learn about a better way to display lists of data.
                  */
-                for (String weatherString : weatherData) {
-                    mWeatherTextView.append((weatherString) + "\n\n\n");
-                }
+                mForecastAdapter.setWeatherData(weatherData);
             } else {
                 showErrorMessage();
             }
@@ -245,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (id == R.id.action_refresh) {
             // TODO (46) Instead of setting the text to "", set the adapter to null before refreshing
-            mWeatherTextView.setText("");
+            mForecastAdapter.setWeatherData(null);
             loadWeatherData();
             return true;
         }
