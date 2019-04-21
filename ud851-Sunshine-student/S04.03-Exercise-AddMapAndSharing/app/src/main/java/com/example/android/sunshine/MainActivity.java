@@ -155,6 +155,15 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
+    private void showMap(Uri uri) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(uri);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
+    }
+
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
         @Override
@@ -221,6 +230,21 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
             return true;
         }
 
+        if (id == R.id.action_map_open) {
+            String location = SunshinePreferences.getPreferredWeatherLocation(this);
+
+            Uri.Builder builder = new Uri.Builder();
+
+            builder.scheme("geo")
+                    .path("0,0")
+                    .appendQueryParameter("q", location);
+
+            Uri locationUri = builder.build();
+
+            showMap(locationUri);
+
+            return true;
+        }
         // TODO (2) Launch the map when the map menu item is clicked
 
         return super.onOptionsItemSelected(item);

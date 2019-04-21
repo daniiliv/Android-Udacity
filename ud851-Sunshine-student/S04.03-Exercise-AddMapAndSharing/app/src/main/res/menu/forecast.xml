@@ -25,4 +25,9 @@
         android:title="@string/action_refresh"
         app:showAsAction="ifRoom"/>
     <!--TODO (1) Add a menu item to open the map-->
+    <item
+        android:id="@+id/action_map_open"
+        android:title="@string/open_a_map"
+        app:showAsAction="never"/>
+
 </menu>
