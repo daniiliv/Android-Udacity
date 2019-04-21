@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void onClickOpenWebpageButton(View v) {
         String urlAsString = "http://www.udacity.com";
+
         openWebPage(urlAsString);
     }
 
@@ -48,12 +49,23 @@ public class MainActivity extends AppCompatActivity {
      * @param v Button that was clicked.
      */
     public void onClickOpenAddressButton(View v) {
-        // TODO (5) Store an address in a String
 
+        String addressString = "St. Petersburg, Russia";
+
+        Uri.Builder builder = new Uri.Builder();
+
+        builder.scheme("geo")
+                .path("0,0")
+                .appendQueryParameter("q", addressString);
+
+        Uri addressUri = builder.build();
+
+        showMap(addressUri);
+
+        // TODO (5) Store an address in a String
         // TODO (6) Use Uri.Builder with the appropriate scheme and query to form the Uri for the address
 
         // TODO (7) Replace the Toast with a call to showMap, passing in the Uri from the previous step
-        Toast.makeText(this, "TODO: Open a map when this button is clicked", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -93,13 +105,13 @@ public class MainActivity extends AppCompatActivity {
          * We wanted to demonstrate the Uri.parse method because its usage occurs frequently. You
          * could have just as easily passed in a Uri as the parameter of this method.
          */
-        Uri webpage = Uri.parse(url);
+        Uri webPage = Uri.parse(url);
 
         /*
          * Here, we create the Intent with the action of ACTION_VIEW. This action allows the user
          * to view particular content. In this case, our webpage URL.
          */
-        Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+        Intent intent = new Intent(Intent.ACTION_VIEW, webPage);
 
         /*
          * This is a check we perform with every implicit Intent that we launch. In some cases,
@@ -111,6 +123,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void showMap(Uri uri) {
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(uri);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
+    }
 
     // TODO (1) Create a method called showMap with a Uri as the single parameter
     // Do steps 2 - 4 within the showMap method
