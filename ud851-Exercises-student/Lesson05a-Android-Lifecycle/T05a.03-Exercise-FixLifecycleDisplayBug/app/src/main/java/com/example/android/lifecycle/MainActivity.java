@@ -6,6 +6,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     /*
@@ -39,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private TextView mLifecycleDisplay;
 
+    private static List<String> mLifecycleCallbacks = new ArrayList<>();
+
     // TODO (1) Declare and instantiate a static ArrayList of Strings called mLifecycleCallbacks
 
     /**
@@ -70,6 +75,12 @@ public class MainActivity extends AppCompatActivity {
                 mLifecycleDisplay.setText(allPreviousLifecycleCallbacks);
             }
         }
+
+        for (String callback : mLifecycleCallbacks) {
+            mLifecycleDisplay.append(callback + "\n");
+        }
+
+        mLifecycleCallbacks.clear();
 
         // TODO (4) Iterate backwards through mLifecycleCallbacks, appending each String and a newline to mLifecycleDisplay
 
@@ -133,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
 
+        mLifecycleCallbacks.add(ON_STOP);
         // TODO (2) Add the ON_STOP String to the front of mLifecycleCallbacks
 
         logAndAppend(ON_STOP);
@@ -159,6 +171,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        mLifecycleCallbacks.add(ON_DESTROY);
 
         // TODO (3) Add the ON_DESTROY String to the front of mLifecycleCallbacks
 
