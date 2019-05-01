@@ -1,6 +1,7 @@
 package com.example.android.lifecycle;
 
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -47,7 +48,57 @@ public class MainActivity extends AppCompatActivity {
 
         mLifecycleDisplay = (TextView) findViewById(R.id.tv_lifecycle_events_display);
 
+        logAndAppend(ON_CREATE);
         // TODO (1) Use logAndAppend within onCreate
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        logAndAppend(ON_START);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        logAndAppend(ON_RESUME);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        logAndAppend(ON_PAUSE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        logAndAppend(ON_STOP);
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+
+        logAndAppend(ON_RESTART);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        logAndAppend(ON_DESTROY);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+
+        logAndAppend(ON_SAVE_INSTANCE_STATE);
     }
 
     // TODO (2) Override onStart, call super.onStart, and call logAndAppend with ON_START
