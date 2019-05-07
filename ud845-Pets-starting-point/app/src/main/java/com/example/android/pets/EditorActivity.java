@@ -15,6 +15,9 @@
  */
 package com.example.android.pets;
 
+import android.content.ContentValues;
+import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +29,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
+
+import com.example.android.pets.data.PetDbHelper;
 
 import static com.example.android.pets.data.PetsContract.PetsEntry;
 
@@ -34,16 +40,24 @@ import static com.example.android.pets.data.PetsContract.PetsEntry;
  */
 public class EditorActivity extends AppCompatActivity {
 
-    /** EditText field to enter the pet's name */
+    /**
+     * EditText field to enter the pet's name
+     */
     private EditText mNameEditText;
 
-    /** EditText field to enter the pet's breed */
+    /**
+     * EditText field to enter the pet's breed
+     */
     private EditText mBreedEditText;
 
-    /** EditText field to enter the pet's weight */
+    /**
+     * EditText field to enter the pet's weight
+     */
     private EditText mWeightEditText;
 
-    /** EditText field to enter the pet's gender */
+    /**
+     * EditText field to enter the pet's gender
+     */
     private Spinner mGenderSpinner;
 
     /**
@@ -51,6 +65,11 @@ public class EditorActivity extends AppCompatActivity {
      * 0 for unknown gender, 1 for male, 2 for female.
      */
     private int mGender = PetsEntry.GENDER_UNKNOWN;
+
+    /**
+     * Database helper that will provide us access to the database
+     */
+    private PetDbHelper mDbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +124,43 @@ public class EditorActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Get user input from editor and save new pet into database.
+     */
+    public void insertPet() {
+
+        // Read from input fields
+        // trim() function eliminates leading or trailing white space.
+        String stringName = mNameEditText.getText().toString().trim();
+        String stringBreed = mBreedEditText.getText().toString().trim();
+        int weightInt = Integer.parseInt(mWeightEditText.getText().toString().trim());
+        int genderInt = mGender;
+
+        // Create database helper
+        mDbHelper = new PetDbHelper(this);
+
+        // Gets the database in write mode
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Create a ContentValues object where column names are the keys,
+        // and pet attributes from the editor are the values.
+        ContentValues values = new ContentValues();
+        values.put(PetsEntry.COLUMN_PET_NAME, stringName);
+        values.put(PetsEntry.COLUMN_PET_BREED, stringBreed);
+        values.put(PetsEntry.COLUMN_PET_GENDER, genderInt);
+        values.put(PetsEntry.COLUMN_PET_WEIGHT, weightInt);
+
+        // Insert a new row for pet in the database, returning the ID of that new row.
+        long newRowId = db.insert(PetsEntry.TABLE_NAME, null, values);
+        if (newRowId != -1) {
+            // Otherwise, the insertion was successful and we can display a toast with the row ID.
+            Toast.makeText(this, "Pet saved with row id: " + newRowId, Toast.LENGTH_LONG).show();
+        } else {
+            // If the row ID is -1, then there was an error with insertion.
+            Toast.makeText(this, "Error with saving pet", Toast.LENGTH_LONG).show();
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu options from the res/menu/menu_editor.xml file.
@@ -119,7 +175,11 @@ public class EditorActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                // Do nothing for now
+                // Save pet to database
+                insertPet();
+
+                // Exit activity.
+                finish();
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:

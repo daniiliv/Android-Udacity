@@ -60,6 +60,12 @@ public class CatalogActivity extends AppCompatActivity {
         displayDatabaseInfo();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        displayDatabaseInfo();
+    }
+
     /**
      * Temporary helper method to display information in the onscreen TextView about the state of
      * the pets database.
@@ -85,10 +91,6 @@ public class CatalogActivity extends AppCompatActivity {
     }
 
     public void insertPet() {
-        // To access our database, we instantiate our subclass of SQLiteOpenHelper
-        // and pass the context, which is the current activity.
-        mDbHelper = new PetDbHelper(this);
-
         // Gets the database in write mode
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
