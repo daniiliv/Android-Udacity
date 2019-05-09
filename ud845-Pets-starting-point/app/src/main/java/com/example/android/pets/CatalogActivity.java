@@ -35,7 +35,9 @@ import com.example.android.pets.data.PetsContract.PetsEntry;
  */
 public class CatalogActivity extends AppCompatActivity {
 
-    /** Database helper that will provide us access to the database */
+    /**
+     * Database helper that will provide us access to the database
+     */
     private PetDbHelper mDbHelper;
 
     @Override
@@ -94,6 +96,39 @@ public class CatalogActivity extends AppCompatActivity {
             // pets table in the database).
             TextView displayView = (TextView) findViewById(R.id.text_view_pet);
             displayView.setText("Number of rows in pets database table: " + cursor.getCount());
+            displayView.append(
+                    "\n\n" + PetsEntry._ID + " | "
+                    + PetsEntry.COLUMN_PET_NAME + " | "
+                    + PetsEntry.COLUMN_PET_BREED + " | "
+                    + PetsEntry.COLUMN_PET_GENDER + " | "
+                    + PetsEntry.COLUMN_PET_WEIGHT
+                    + "\n\n"
+            );
+
+            int petTableIDColumnID = cursor.getColumnIndex(PetsEntry._ID);
+            int petTableNameColumnID = cursor.getColumnIndex(PetsEntry.COLUMN_PET_NAME);
+            int petTableBreedColumnID = cursor.getColumnIndex(PetsEntry.COLUMN_PET_BREED);
+            int petTableGenderColumnID = cursor.getColumnIndex(PetsEntry.COLUMN_PET_GENDER);
+            int petTableWeightColumnID = cursor.getColumnIndex(PetsEntry.COLUMN_PET_WEIGHT);
+
+            while (cursor.moveToNext()) {
+                int petIDInt = cursor.getInt(petTableIDColumnID);
+                String petNameString = cursor.getString(petTableNameColumnID);
+                String petBreedString = cursor.getString(petTableBreedColumnID);
+                int petGenderInt = cursor.getInt(petTableGenderColumnID);
+                int petWeightInt = cursor.getInt(petTableWeightColumnID);
+
+                displayView.append(
+                        petIDInt + " | "
+                        + petNameString + " | "
+                        + petBreedString + " | "
+                        + petGenderInt + " | "
+                        + petWeightInt
+                        + "\n"
+                );
+
+            }
+
         } finally {
             // Always close the cursor when you're done reading from it. This releases all its
             // resources and makes it invalid.
