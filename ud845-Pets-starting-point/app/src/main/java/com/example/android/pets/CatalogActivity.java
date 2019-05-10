@@ -30,6 +30,8 @@ import android.widget.TextView;
 import com.example.android.pets.data.PetDbHelper;
 import com.example.android.pets.data.PetsContract.PetsEntry;
 
+import static com.example.android.pets.data.PetsContract.BASE_CONTENT_URI;
+
 /**
  * Displays list of pets that were entered and stored in the app.
  */
@@ -74,22 +76,15 @@ public class CatalogActivity extends AppCompatActivity {
      */
     private void displayDatabaseInfo() {
 
-        // Create and/or open a database to read from it
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        String[] projection = {
+                PetsEntry._ID,
+                PetsEntry.COLUMN_PET_NAME,
+                PetsEntry.COLUMN_PET_BREED,
+                PetsEntry.COLUMN_PET_GENDER,
+                PetsEntry.COLUMN_PET_WEIGHT
+        };
 
-        // Perform this raw SQL query "SELECT * FROM pets"
-        // to get a Cursor that contains all rows from the pets table.
-
-
-        Cursor cursor = db.query(
-                PetsEntry.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
+        Cursor cursor = getContentResolver().query(BASE_CONTENT_URI, projection, null, null, null);
 
         try {
             // Display the number of rows in the Cursor (which reflects the number of rows in the
@@ -98,11 +93,11 @@ public class CatalogActivity extends AppCompatActivity {
             displayView.setText("Number of rows in pets database table: " + cursor.getCount());
             displayView.append(
                     "\n\n" + PetsEntry._ID + " | "
-                    + PetsEntry.COLUMN_PET_NAME + " | "
-                    + PetsEntry.COLUMN_PET_BREED + " | "
-                    + PetsEntry.COLUMN_PET_GENDER + " | "
-                    + PetsEntry.COLUMN_PET_WEIGHT
-                    + "\n\n"
+                            + PetsEntry.COLUMN_PET_NAME + " | "
+                            + PetsEntry.COLUMN_PET_BREED + " | "
+                            + PetsEntry.COLUMN_PET_GENDER + " | "
+                            + PetsEntry.COLUMN_PET_WEIGHT
+                            + "\n\n"
             );
 
             int petTableIDColumnID = cursor.getColumnIndex(PetsEntry._ID);
@@ -120,11 +115,11 @@ public class CatalogActivity extends AppCompatActivity {
 
                 displayView.append(
                         petIDInt + " | "
-                        + petNameString + " | "
-                        + petBreedString + " | "
-                        + petGenderInt + " | "
-                        + petWeightInt
-                        + "\n"
+                                + petNameString + " | "
+                                + petBreedString + " | "
+                                + petGenderInt + " | "
+                                + petWeightInt
+                                + "\n"
                 );
 
             }
