@@ -53,7 +53,13 @@ public class CatalogActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        displayDatabaseInfo();
+
+        // Find the ListView which will be populated with the pet data
+        listView = (ListView) findViewById(R.id.lvItems);
+
+        // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
+        View emptyView = findViewById(R.id.empty_view);
+        listView.setEmptyView(emptyView);
     }
 
     @Override
