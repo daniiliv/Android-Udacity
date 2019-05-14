@@ -37,6 +37,7 @@ import android.widget.Toast;
 
 import static com.example.android.pets.data.PetsContract.PetsEntry;
 import static com.example.android.pets.data.PetsContract.PetsEntry.CONTENT_URI;
+import static com.example.android.pets.data.PetsContract.PetsEntry.GENDER_UNKNOWN;
 
 /**
  * Allows user to create a new pet or edit an existing one.
@@ -161,8 +162,26 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         // trim() function eliminates leading or trailing white space.
         String stringName = mNameEditText.getText().toString().trim();
         String stringBreed = mBreedEditText.getText().toString().trim();
-        int weightInt = Integer.parseInt(mWeightEditText.getText().toString().trim());
+        int weightInt = 0;
+        String weightString = mWeightEditText.getText().toString().trim();
+
+        // If the weight is not provided by the user, don't try to parse the string into an
+        // integer value. Use 0 by default.
+        if (!TextUtils.isEmpty(weightString)) {
+            weightInt = Integer.parseInt(weightString);
+        }
+
         int genderInt = mGender;
+
+        // Check if this is supposed to be a new pet
+        // and check if all the fields in the editor are blank
+        if (mCurrentPetUri == null &&
+                TextUtils.isEmpty(stringName) &&
+                TextUtils.isEmpty(stringBreed) && TextUtils.isEmpty(weightString) && genderInt == GENDER_UNKNOWN) {
+            // Since no fields were modified, we can return early without creating a new pet.
+            // No need to create ContentValues and no need to do any ContentProvider operations.
+            return;
+        }
 
         // Create a ContentValues object where column names are the keys,
         // and pet attributes from the editor are the values.
@@ -260,7 +279,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
         // This loader will execute the ContentProvider's query method on a background thread
         return new CursorLoader(this,   // Parent activity context
-                PetsEntry.CONTENT_URI,         // Query the content URI for the current pet
+                mCurrentPetUri,         // Query the content URI for the current pet
                 projection,             // Columns to include in the resulting Cursor
                 null,                   // No selection clause
                 null,                   // No selection arguments
