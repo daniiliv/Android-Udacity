@@ -112,4 +112,5 @@
 
     <!-- Toast message in editor when current pet has failed to be deleted [CHAR LIMIT=NONE] -->
     <string name="editor_delete_all_pets_failed">Error with deleting pets</string>
+    <string name="unknown_breed_string">Unknown breed</string>
 </resources>
