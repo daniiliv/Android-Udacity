@@ -34,8 +34,6 @@ import android.widget.ListView;
 
 import com.example.android.pets.data.PetsContract.PetsEntry;
 
-import static com.example.android.pets.data.PetsContract.PetsEntry.CONTENT_URI;
-
 
 /**
  * Displays list of pets that were entered and stored in the app.
@@ -87,7 +85,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
                 // {@link PetEntry#CONTENT_URI}.
                 // For example, the URI would be "content://com.example.android.pets/pets/2"
                 // if the pet with ID 2 was clicked on.
-                Uri currentPetUri = ContentUris.withAppendedId(CONTENT_URI, id);
+                Uri currentPetUri = ContentUris.withAppendedId(PetsEntry.CONTENT_URI, id);
 
                 // Set the URI on the data field of the intent
                 intent.setData(currentPetUri);
@@ -118,7 +116,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         // Use the {@link PetEntry#CONTENT_URI} to indicate that we want to insert
         // into the pets database table.
         // Receive the new content URI that will allow us to access Toto's data in the future.
-        Uri newUri = getContentResolver().insert(CONTENT_URI, values);
+        Uri newUri = getContentResolver().insert(PetsEntry.CONTENT_URI, values);
     }
 
     @Override
