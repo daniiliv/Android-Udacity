@@ -16,10 +16,15 @@
 
 package com.udacity.example.quizexample;
 
+import android.content.ContentResolver;
+import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+
+import com.udacity.example.droidtermsprovider.DroidTermsExampleContract;
 
 /**
  * Gets the data from the ContentProvider and shows a series of flash cards.
@@ -30,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     // The current state of the app
     private int mCurrentState;
 
+    // The data from the DroidTermsExample content provider
+    Cursor mData;
     // TODO (3) Create an instance variable storing a Cursor called mData
     private Button mButton;
 
@@ -51,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
         mButton = (Button) findViewById(R.id.button_next);
 
         // TODO (5) Create and execute your AsyncTask here
+
+        //Run the database operation to get the cursor off of the main thread
+        new WordFetchTask().execute();
     }
 
     /**
@@ -88,6 +98,35 @@ public class MainActivity extends AppCompatActivity {
 
         mCurrentState = STATE_SHOWN;
 
+    }
+
+    // Use an async task to do the data fetch off of the main thread.
+    class WordFetchTask extends AsyncTask<Void, Void, Cursor> {
+
+        // Invoked on a background thread
+        @Override
+        protected Cursor doInBackground(Void... voids) {
+            // Make the query to get the data
+
+            // Get the content resolver
+            ContentResolver contentResolver = getContentResolver();
+
+            // Call the query method on the resolver with the correct Uri from the contract class
+            return contentResolver.query(DroidTermsExampleContract.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    null);
+        }
+
+        // Invoked on UI thread
+        @Override
+        protected void onPostExecute(Cursor cursor) {
+            super.onPostExecute(cursor);
+
+            // Set the data for MainActivity
+            mData = cursor;
+        }
     }
 
     // TODO (1) Create AsyncTask with the following generic types <Void, Void, Cursor>
