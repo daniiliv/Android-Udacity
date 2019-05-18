@@ -23,8 +23,12 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.udacity.example.droidtermsprovider.DroidTermsExampleContract;
+
+import static com.udacity.example.droidtermsprovider.DroidTermsExampleContract.COLUMN_DEFINITION;
+import static com.udacity.example.droidtermsprovider.DroidTermsExampleContract.COLUMN_WORD;
 
 /**
  * Gets the data from the ContentProvider and shows a series of flash cards.
@@ -39,6 +43,13 @@ public class MainActivity extends AppCompatActivity {
     private int mCurrentState;
 
     private Button mButton;
+
+    private TextView mTextViewWord;
+
+    private TextView mTextViewDef;
+
+    // The index of the definition and word column in the cursor
+    private int mDefCol, mWordCol;
 
     // This state is when the word definition is hidden and clicking the button will therefore
     // show the definition
@@ -58,6 +69,10 @@ public class MainActivity extends AppCompatActivity {
         // TODO (1) You'll probably want more than just the Button
         mButton = (Button) findViewById(R.id.button_next);
 
+        mTextViewWord = (TextView) findViewById(R.id.text_view_word);
+
+        mTextViewDef = (TextView) findViewById(R.id.text_view_definition);
+
         //Run the database operation to get the cursor off of the main thread
         new WordFetchTask().execute();
 
@@ -66,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * This is called from the layout when the button is clicked and switches between the
      * two app states.
+     *
      * @param view The view that was clicked
      */
     public void onButtonClick(View view) {
@@ -87,27 +103,49 @@ public class MainActivity extends AppCompatActivity {
         // Change button text
         mButton.setText(getString(R.string.show_definition));
 
+        if (mData != null) {
+            // Move to the next position in the cursor, if there isn't one, move to the first
+            if (!mData.moveToNext()) {
+                mData.moveToFirst();
+            }
+            // Hide the definition TextView
+            mTextViewDef.setVisibility(View.INVISIBLE);
+
+            // Change button text
+            mButton.setText(getString(R.string.show_definition));
+
+            // Get the next word
+            mTextViewWord.setText(mData.getString(mWordCol));
+            mTextViewDef.setText(mData.getString(mDefCol));
+
+            mCurrentState = STATE_HIDDEN;
+        }
+
         // TODO (3) Go to the next word in the Cursor, show the next word and hide the definition
         // Note that you shouldn't try to do this if the cursor hasn't been set yet.
         // If you reach the end of the list of words, you should start at the beginning again.
-        mCurrentState = STATE_HIDDEN;
+
 
     }
 
     public void showDefinition() {
 
-        // Change button text
-        mButton.setText(getString(R.string.next_word));
+        if (mData != null) {
 
-        // TODO (4) Show the definition
-        mCurrentState = STATE_SHOWN;
+            // Show the definition TextView
+            mTextViewDef.setVisibility(View.VISIBLE);
+
+            // Change button text
+            mButton.setText(getString(R.string.next_word));
+            mCurrentState = STATE_SHOWN;
+        }
 
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // TODO (5) Remember to close your cursor!
+        mData.close();
     }
 
     // Use an async task to do the data fetch off of the main thread.
@@ -136,6 +174,11 @@ public class MainActivity extends AppCompatActivity {
             // Set the data for MainActivity
             mData = cursor;
 
+            mWordCol = cursor.getColumnIndex(COLUMN_WORD);
+
+            mDefCol = cursor.getColumnIndex(COLUMN_DEFINITION);
+
+            nextWord();
             // TODO (2) Initialize anything that you need the cursor for, such as setting up
             // the screen with the first word and setting any other instance variables
         }
