@@ -1,16 +1,16 @@
 package com.example.voiceassistant;
 
+import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.util.Consumer;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import java.util.Locale;
 
@@ -23,9 +23,12 @@ public class MainActivity extends AppCompatActivity {
     protected EditText questionText;
 
     // Window that displays chat with the user.
-    protected TextView chatWindow;
+    protected RecyclerView chatMessageList;
 
+    // For text pronouncing.
     protected TextToSpeech tts;
+
+    protected MessageListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,10 +38,11 @@ public class MainActivity extends AppCompatActivity {
         // Binding the xml view with java using its id.
         sendButton = findViewById(R.id.sendButton);
         questionText = findViewById(R.id.questionField);
-        chatWindow = findViewById(R.id.chatWindow);
+        chatMessageList = findViewById(R.id.chatMessageList);
 
-        // Scrolling chat.
-        chatWindow.setMovementMethod(new ScrollingMovementMethod());
+        adapter = new MessageListAdapter();
+        chatMessageList.setLayoutManager(new LinearLayoutManager(this));
+        chatMessageList.setAdapter(adapter);
 
         // Performs action when button is clicked.
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -51,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         // Set text listener to disable send button if question field is empty.
         questionText.addTextChangedListener(questionTextWatcher);
 
-
+        // Instantiate Pronounce tool.
         tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -60,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
     }
 
     /**
@@ -69,18 +72,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onClickSendButton() {
         String text = questionText.getText().toString();
 
-        //  Displays question in the chat.
-        chatWindow.append(">> " + text + "\n");
+        //  Add question in the message list.
+        adapter.messageList.add(new Message(text, true));
+        adapter.notifyDataSetChanged();
 
-        // Gets an answer user's question and displays it in the chat.
+        // Gets an answer user's question and adds it in the message list.
         AI.getAnswer(text, new Consumer<String>() {
             @Override
             public void accept(String answer) {
-                chatWindow.append("<< " + answer + "\n");
+                adapter.messageList.add(new Message(answer, false));
+
+                // Pronounce assistant answer.
                 tts.speak(answer, TextToSpeech.QUEUE_FLUSH, null, null);
+
+                adapter.notifyDataSetChanged();
+                int lastMessageIndex = adapter.messageList.size() - 1;
+                chatMessageList.scrollToPosition(lastMessageIndex);
             }
         });
-
 
         // Clears question field.
         questionText.setText("");

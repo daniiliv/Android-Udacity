@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 /**
  * Artificial Intelligence that answers some questions.
  *
@@ -30,8 +29,9 @@ public class AI {
     /**
      * Answers user's question.
      *
+     * Returns list of possible answers separated with comma via callback.
+     *
      * @param userQuestion question that user asked.
-     * @return list of possible answers separated with comma.
      */
     public static void getAnswer(String userQuestion, final Consumer<String> callback) {
 
@@ -52,7 +52,7 @@ public class AI {
             put("как дела", "Как земля");
             put("чем занимаешься", "Отвечаю кожаному существу");
             put("есть ли жизнь на марсе", "Наука не знает точного ответа на этот вопрос");
-            put("кто президент России", "Порядочный человек");
+            put("кто президент россии", "Порядочный человек");
             put("какого цвета небо", "Я думаю, небо имеет фирменный цвет компании Skillbox");
             put("какой сегодня день", "Сегодня " + currentDate);
             put("сколько сейчас времени", "Время - деньги. Сейчас " + currentTime);
@@ -64,13 +64,35 @@ public class AI {
         // List of answers found.
         final List<String> answers = new ArrayList<>();
 
-        // Searching in database.
-        for (String databaseQuestion : dataBase.keySet()) {
+        int maxScore = 0;
+        String maxScoreAnswer = "OK";
+        String[] split_user = userQuestion.split("\\s+");
 
-            // If KEY was found, then add VALUE (answer) for this key in our answer list.
-            if (userQuestion.contains(databaseQuestion)) {
-                answers.add(dataBase.get(databaseQuestion));
+
+        // Smart searching in database.
+        for (String databaseQuestion : dataBase.keySet()) {
+            databaseQuestion = databaseQuestion.toLowerCase();
+            String[] splitDb = databaseQuestion.split("\\s+");
+            int score = 0;
+            for (String wordUser : split_user) {
+                for (String wordDb : splitDb) {
+                    int min_len = Math.min(wordDb.length(), wordUser.length());
+                    int cutLen = (int) (min_len * 0.7);
+                    String wordUserCut = wordUser.substring(0, cutLen);
+                    String wordDbCut = wordDb.substring(0, cutLen);
+                    if (wordUserCut.equals(wordDbCut)) {
+                        score++;
+                    }
+                }
             }
+            if (score > maxScore) {
+                maxScore = score;
+                maxScoreAnswer = dataBase.get(databaseQuestion);
+            }
+        }
+
+        if (maxScore > 0) {
+            answers.add(maxScoreAnswer);
         }
 
         // Extracts city from user's input for weather query.
@@ -114,8 +136,6 @@ public class AI {
             });
         }
 
-
-
         // Extracts word from user's input for translation query.
         Pattern wordPattern = Pattern.compile("переведи (\\p{L}+)", Pattern.CASE_INSENSITIVE);
         Matcher wordMatcher = wordPattern.matcher(userQuestion);
@@ -135,7 +155,6 @@ public class AI {
                 }
             });
         }
-
 
         // If there are no answers found, add answer OK.
         if (answers.isEmpty()) {
