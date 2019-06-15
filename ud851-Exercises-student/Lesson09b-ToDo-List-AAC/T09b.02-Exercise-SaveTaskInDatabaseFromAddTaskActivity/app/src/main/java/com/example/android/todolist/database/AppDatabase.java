@@ -22,7 +22,9 @@ public abstract class AppDatabase extends RoomDatabase {
                 Log.d(LOG_TAG, "Creating new database instance");
                 sInstance = Room.databaseBuilder(context.getApplicationContext(),
                         AppDatabase.class, AppDatabase.DATABASE_NAME)
-                        // TODO (2) call allowMainThreadQueries before building the instance
+                        // Queries should be done in a separate thread to avoid locking the UI
+                        // We will allow this ONLY TEMPORALLY to see that our DB is working
+                        .allowMainThreadQueries()
                         .build();
             }
         }
@@ -30,6 +32,8 @@ public abstract class AppDatabase extends RoomDatabase {
         return sInstance;
     }
 
-    public abstract TaskDao taskDao();
+    public static TaskDao taskDao() {
+        return null;
+    }
 
 }
