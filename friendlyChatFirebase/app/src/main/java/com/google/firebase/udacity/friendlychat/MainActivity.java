@@ -122,6 +122,11 @@ public class MainActivity extends AppCompatActivity {
                 // COMPLETED: Send messages on click
                 FriendlyMessage friendlyMessage =
                         new FriendlyMessage(mMessageEditText.getText().toString(), mUsername, null);
+
+                // Add the message to the cloud.
+                // push() generates a new id for each message
+                mDatabaseReference.push().setValue(friendlyMessage);
+
                 // Clear input box
                 mMessageEditText.setText("");
             }
