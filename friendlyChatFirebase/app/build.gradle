@@ -9,6 +9,7 @@ repositories {
 
 android {
     compileSdkVersion 24
+    buildToolsVersion "24.0.1"
 
     defaultConfig {
         applicationId "com.google.firebase.udacity.friendlychat"
@@ -31,16 +32,29 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    testImplementation 'junit:junit:4.12'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
 
-    implementation 'com.android.support:design:24.2.1'
-    implementation 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:design:24.2.0'
+    compile 'com.android.support:appcompat-v7:24.2.0'
 
     // Displaying images
-    implementation 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.github.bumptech.glide:glide:3.6.1'
 
-    implementation 'com.google.firebase:firebase-database:18.0.0'
+    // Firebase Dependency
+    // Realtime Db
+    compile 'com.google.firebase:firebase-database:9.6.1'
+    // Firebase Auth
+    compile 'com.google.firebase:firebase-auth:9.6.1'
+    // Firebase Storage
+    compile 'com.google.firebase:firebase-storage:9.6.1'
+    // notification messagging
+    compile 'com.google.firebase:firebase-messaging:9.6.1'
+    // Remote config
+    compile 'com.google.firebase:firebase-config:9.6.1'
+
+    // UI Auth
+    compile 'com.firebaseui:firebase-ui-auth:0.6.0'
 }
-
+// Firebase plugin
 apply plugin: 'com.google.gms.google-services'
