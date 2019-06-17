@@ -30,6 +30,9 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,12 +52,24 @@ public class MainActivity extends AppCompatActivity {
 
     private String mUsername;
 
+    // The entry point for our app to access the database.
+    private FirebaseDatabase mFirebaseDatabase;
+
+    // References a specific part of the database.
+    // References the messages portion of the database.
+    private DatabaseReference mDatabaseReference;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         mUsername = ANONYMOUS;
+
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        // Getting a reference to the root node - mFirebaseDatabase.getReference();
+        // Messages portion of the database - .child("messages");
+        mDatabaseReference = mFirebaseDatabase.getReference().child("messages");
 
         // Initialize references to views
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
