@@ -30,6 +30,9 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -58,6 +61,10 @@ public class MainActivity extends AppCompatActivity {
     // References a specific part of the database.
     // References the messages portion of the database.
     private DatabaseReference mDatabaseReference;
+
+    // Helps to listen and have our code triggered whenever
+    // changes occur on the messages node.
+    private ChildEventListener mChildEventListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +138,42 @@ public class MainActivity extends AppCompatActivity {
                 mMessageEditText.setText("");
             }
         });
+
+        mChildEventListener = new ChildEventListener() {
+
+            /**
+             * Called whenever a new message is inserted into the messages list.
+             * @param dataSnapshot contains data from the Firebase database (message that has been added).
+             * @param s
+             */
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+                // Deserialize the message from the database into plain FriendlyMessage object.
+                FriendlyMessage friendlyMessage = dataSnapshot.getValue(FriendlyMessage.class);
+                mMessageAdapter.add(friendlyMessage);
+            }
+
+            // Called when contents of an existing message gets changed.
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+
+            // Called when an existing message is deleted.
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {}
+
+            // Called when if one of our messages changed possition in the list.
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+
+            // Indicates that some error occurred when we are trying to make changes.
+            // Typically, it means that we don't have permission to read the data.
+            @Override
+            public void onCancelled(DatabaseError databaseError) {}
+        };
+
+        // Attach the listener to the "messages" node.
+        mDatabaseReference.addChildEventListener(mChildEventListener);
     }
 
     @Override
