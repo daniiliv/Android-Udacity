@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     // changes occur on the messages node.
     private ChildEventListener mChildEventListener;
 
+    // Variables for user's authentication.
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
@@ -152,42 +153,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mChildEventListener = new ChildEventListener() {
-
-            /**
-             * Called whenever a new message is inserted into the messages list.
-             * @param dataSnapshot contains data from the Firebase database (message that has been added).
-             * @param s
-             */
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-                // Deserialize the message from the database into plain FriendlyMessage object.
-                FriendlyMessage friendlyMessage = dataSnapshot.getValue(FriendlyMessage.class);
-                mMessageAdapter.add(friendlyMessage);
-            }
-
-            // Called when contents of an existing message gets changed.
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
-
-            // Called when an existing message is deleted.
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {}
-
-            // Called when if one of our messages changed possition in the list.
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
-
-            // Indicates that some error occurred when we are trying to make changes.
-            // Typically, it means that we don't have permission to read the data.
-            @Override
-            public void onCancelled(DatabaseError databaseError) {}
-        };
-
-        // Attach the listener to the "messages" node.
-        mDatabaseReference.addChildEventListener(mChildEventListener);
-
+        // Instantiate auth state listener in order to know whether user is signed in or signed out.
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -195,11 +161,11 @@ public class MainActivity extends AppCompatActivity {
 
                 if (user != null) {
                     // User is signed in.
-                    Toast.makeText(MainActivity.this,
-                            "You're now signed in. Welcome to FriendlyChat.", Toast.LENGTH_SHORT).show();
+                    onSignedInInitialize(user.getDisplayName());
                 } else {
                     // User is signed out.
-                    // Call sign in flow.
+                    // Call sign in screen.
+                    onSignedOutCleanup();
                     startActivityForResult(
                             AuthUI.getInstance()
                                 .createSignInIntentBuilder()
@@ -215,6 +181,77 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    private void detachDatabaseReadListener() {
+        if (mChildEventListener != null) {
+            mDatabaseReference.removeEventListener(mChildEventListener);
+            mChildEventListener = null;
+        }
+    }
+
+    // Creates listener if it doesn't exist and attaches it to our database.
+    private void attachDatabaseReadListener() {
+        if (mChildEventListener == null) {
+            mChildEventListener = new ChildEventListener() {
+
+                /**
+                 * Called whenever a new message is inserted into the messages list.
+                 * <p>
+                 * Need to be authenticated to be able to read and write to db.
+                 *
+                 * @param dataSnapshot contains data from the Firebase database (message that has been added).
+                 * @param s
+                 */
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+                    // Deserialize the message from the database into plain FriendlyMessage object.
+                    FriendlyMessage friendlyMessage = dataSnapshot.getValue(FriendlyMessage.class);
+
+                    // Add this object to a message list.
+                    mMessageAdapter.add(friendlyMessage);
+                }
+
+                // Called when contents of an existing message gets changed.
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                }
+
+                // Called when an existing message is deleted.
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                // Called when if one of our messages changed possition in the list.
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                }
+
+                // Indicates that some error occurred when we are trying to make changes.
+                // Typically, it means that we don't have permission to read the data.
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            };
+
+            // Attach the listener to the "messages" node.
+            mDatabaseReference.addChildEventListener(mChildEventListener);
+        }
+    }
+
+    // Sets the username to anonymous, clears the adapter (message history) and
+    // detaches the listener from the "messages" node.
+    private void onSignedOutCleanup() {
+        mUsername = ANONYMOUS;
+        mMessageAdapter.clear();
+        detachDatabaseReadListener();
+    }
+
+    // Sets the username specified when user logged in and attaches the listener to the "messages" node.
+    private void onSignedInInitialize(String displayName) {
+        mUsername = displayName;
+        attachDatabaseReadListener();
     }
 
     @Override
@@ -233,7 +270,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+        if (mAuthStateListener != null) {
+            mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+        }
+        detachDatabaseReadListener();
+        mMessageAdapter.clear();
     }
 
     // Activity is not in foreground.
