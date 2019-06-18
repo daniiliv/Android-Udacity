@@ -78,14 +78,14 @@ public class MainActivity extends AppCompatActivity {
         // Messages portion of the database - .child("messages");
         mDatabaseReference = mFirebaseDatabase.getReference().child("messages");
 
-        // Initialize references to views
+        // Initialize references to views.
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mMessageListView = (ListView) findViewById(R.id.messageListView);
         mPhotoPickerButton = (ImageButton) findViewById(R.id.photoPickerButton);
         mMessageEditText = (EditText) findViewById(R.id.messageEditText);
         mSendButton = (Button) findViewById(R.id.sendButton);
 
-        // Initialize message ListView and its adapter
+        // Initialize message ListView and its adapter.
         List<FriendlyMessage> friendlyMessages = new ArrayList<>();
         mMessageAdapter = new MessageAdapter(this, R.layout.item_message, friendlyMessages);
         mMessageListView.setAdapter(mMessageAdapter);
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         // Initialize progress bar
         mProgressBar.setVisibility(ProgressBar.INVISIBLE);
 
-        // ImagePickerButton shows an image picker to upload a image for a message
+        // ImagePickerButton shows an image picker to upload a image for a message.
         mPhotoPickerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Enable Send button when there's text to send
+        // Enable Send button when there's text to send.
         mMessageEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -122,19 +122,19 @@ public class MainActivity extends AppCompatActivity {
         });
         mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(DEFAULT_MSG_LENGTH_LIMIT)});
 
-        // Send button sends a message and clears the EditText
+        // Send button sends a message and clears the EditText.
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // COMPLETED: Send messages on click
+                // COMPLETED: Send messages on click.
                 FriendlyMessage friendlyMessage =
                         new FriendlyMessage(mMessageEditText.getText().toString(), mUsername, null);
 
-                // Add the message to the cloud.
-                // push() generates a new id for each message
+                // Add the message to the cloud Firebase database.
+                // push() generates a new id for each message.
                 mDatabaseReference.push().setValue(friendlyMessage);
 
-                // Clear input box
+                // Clear input box.
                 mMessageEditText.setText("");
             }
         });
