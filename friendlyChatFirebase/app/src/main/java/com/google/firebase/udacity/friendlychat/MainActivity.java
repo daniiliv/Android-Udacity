@@ -16,6 +16,7 @@
 package com.google.firebase.udacity.friendlychat;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -29,7 +30,11 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import com.firebase.ui.auth.AuthUI;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -45,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String ANONYMOUS = "anonymous";
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 1000;
+
+    // Request code.
+    private static final int RC_SIGN_IN = 1;
 
     private ListView mMessageListView;
     private MessageAdapter mMessageAdapter;
@@ -66,6 +74,9 @@ public class MainActivity extends AppCompatActivity {
     // changes occur on the messages node.
     private ChildEventListener mChildEventListener;
 
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
         mUsername = ANONYMOUS;
 
         mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mFirebaseAuth = FirebaseAuth.getInstance();
+
         // Getting a reference to the root node - mFirebaseDatabase.getReference();
         // Messages portion of the database - .child("messages");
         mDatabaseReference = mFirebaseDatabase.getReference().child("messages");
@@ -174,6 +187,34 @@ public class MainActivity extends AppCompatActivity {
 
         // Attach the listener to the "messages" node.
         mDatabaseReference.addChildEventListener(mChildEventListener);
+
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+
+                if (user != null) {
+                    // User is signed in.
+                    Toast.makeText(MainActivity.this,
+                            "You're now signed in. Welcome to FriendlyChat.", Toast.LENGTH_SHORT).show();
+                } else {
+                    // User is signed out.
+                    // Call sign in flow.
+                    startActivityForResult(
+                            AuthUI.getInstance()
+                                .createSignInIntentBuilder()
+                                // Disable automatically saving the user's credentials and try to log them in.
+                                .setIsSmartLockEnabled(false)
+                                .setProviders(
+                                        AuthUI.EMAIL_PROVIDER,
+                                        AuthUI.GOOGLE_PROVIDER)
+                                .build(),
+
+                            // Flag - if we return from starting activity for the result.
+                            RC_SIGN_IN);
+                }
+            }
+        };
     }
 
     @Override
@@ -186,5 +227,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         return super.onOptionsItemSelected(item);
+    }
+
+    // Activity is in foreground.
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+    }
+
+    // Activity is not in foreground.
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
     }
 }
