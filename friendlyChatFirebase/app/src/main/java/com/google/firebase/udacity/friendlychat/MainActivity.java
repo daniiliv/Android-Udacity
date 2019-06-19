@@ -16,6 +16,7 @@
 package com.google.firebase.udacity.friendlychat;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -41,6 +42,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +83,10 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
+    // Firebase instance variables for an images storage.
+    private FirebaseStorage mFirebaseStorage;
+    private StorageReference mChatPhotosStorageReference;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +100,10 @@ public class MainActivity extends AppCompatActivity {
         // Getting a reference to the root node - mFirebaseDatabase.getReference();
         // Messages portion of the database - .child("messages");
         mDatabaseReference = mFirebaseDatabase.getReference().child("messages");
+
+        // Getting a reference to the root node - mFirebaseStorage.getReference();
+        // Photos portion on the location - .child("chat_photos");
+        mChatPhotosStorageReference = mFirebaseStorage.getReference().child("chat_photos");
 
         // Initialize references to views.
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -203,6 +214,13 @@ public class MainActivity extends AppCompatActivity {
                 // Sign in was canceled by the user, finish the activity
                 Toast.makeText(this, "Sign in canceled", Toast.LENGTH_SHORT).show();
                 finish();
+            } else if (requestCode == RC_PHOTO_PICKER && resultCode == RESULT_OK) {
+                Uri selectedImageUri = data.getData();
+
+                // [content://local_images/example/2. The last path segment is 2]
+                // Get a reference to store file at chat_photos/<FILENAME>
+                StorageReference photoRef =
+                        mChatPhotosStorageReference.child(selectedImageUri.getLastPathSegment());
             }
         }
     }
