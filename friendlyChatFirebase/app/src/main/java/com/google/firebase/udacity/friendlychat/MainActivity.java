@@ -217,34 +217,36 @@ public class MainActivity extends AppCompatActivity {
                 // Sign in was canceled by the user, finish the activity
                 Toast.makeText(this, "Sign in canceled", Toast.LENGTH_SHORT).show();
                 finish();
-            } else if (requestCode == RC_PHOTO_PICKER && resultCode == RESULT_OK) {
-                Uri selectedImageUri = data.getData();
-
-                // [content://local_images/example/2. The last path segment is 2]
-                // Get a reference to store file at chat_photos/<FILENAME>
-                StorageReference photoRef =
-                        mChatPhotosStorageReference.child(selectedImageUri.getLastPathSegment());
-
-                // Upload file to a Firebase storage.
-                photoRef.putFile(selectedImageUri).addOnSuccessListener
-                        (this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
-
-                    /**
-                     * Handles successful uploads.
-                     *
-                     * @param taskSnapshot key to get URL of the file that was just sent to the storage.
-                     */
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                        FriendlyMessage friendlyMessage =
-                                new FriendlyMessage(null, mUsername, downloadUrl.toString());
-
-                        // Store friendlyMessage object in Db.
-                        mDatabaseReference.push().setValue(friendlyMessage);
-                    }
-                });
             }
+        } else if (requestCode == RC_PHOTO_PICKER && resultCode == RESULT_OK) {
+            Uri selectedImageUri = data.getData();
+
+            // [content://local_images/example/2. The last path segment is 2]
+            // Get a reference to store file at chat_photos/<FILENAME>
+            StorageReference photoRef =
+                    mChatPhotosStorageReference.child(selectedImageUri.getLastPathSegment());
+
+            // Upload file to a Firebase storage.
+            photoRef.putFile(selectedImageUri)
+                    .addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+
+                        /**
+                         * Handles successful uploads.
+                         *
+                         * @param taskSnapshot key to get URL of the file that was just sent to the storage.
+                         */
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            // When the image has successfully uploaded, we get its download URL.
+                            Uri downloadUrl = taskSnapshot.getDownloadUrl();
+
+                            // Set the download URL to the message box, so that the user can send it to the database.
+                            FriendlyMessage friendlyMessage =
+                                    new FriendlyMessage(null, mUsername, downloadUrl.toString());
+                            // Store friendlyMessage object in Db.
+                            mDatabaseReference.push().setValue(friendlyMessage);
+                        }
+                    });
         }
     }
 
