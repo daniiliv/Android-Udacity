@@ -35,6 +35,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -44,6 +45,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
 
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseStorage = FirebaseStorage.getInstance();
 
         // Getting a reference to the root node - mFirebaseDatabase.getReference();
         // Messages portion of the database - .child("messages");
@@ -221,6 +224,26 @@ public class MainActivity extends AppCompatActivity {
                 // Get a reference to store file at chat_photos/<FILENAME>
                 StorageReference photoRef =
                         mChatPhotosStorageReference.child(selectedImageUri.getLastPathSegment());
+
+                // Upload file to a Firebase storage.
+                photoRef.putFile(selectedImageUri).addOnSuccessListener
+                        (this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+
+                    /**
+                     * Handles successful uploads.
+                     *
+                     * @param taskSnapshot key to get URL of the file that was just sent to the storage.
+                     */
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        FriendlyMessage friendlyMessage =
+                                new FriendlyMessage(null, mUsername, downloadUrl.toString());
+
+                        // Store friendlyMessage object in Db.
+                        mDatabaseReference.push().setValue(friendlyMessage);
+                    }
+                });
             }
         }
     }
