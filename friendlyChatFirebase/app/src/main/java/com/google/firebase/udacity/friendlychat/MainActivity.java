@@ -43,12 +43,16 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String ANONYMOUS = "anonymous";
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 1000;
+
+    public static final String FRIENDLY_MSG_LENGTH_KEY = "friendly_msg_len";
 
     // Request code.
     private static final int RC_SIGN_IN = 1;
@@ -89,6 +95,9 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseStorage mFirebaseStorage;
     private StorageReference mChatPhotosStorageReference;
 
+    // Firebase instance variables for a remote config.
+    private FirebaseRemoteConfig mFirebaseRemoteConfig;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,6 +116,8 @@ public class MainActivity extends AppCompatActivity {
         // Getting a reference to the root node - mFirebaseStorage.getReference();
         // Photos portion on the location - .child("chat_photos");
         mChatPhotosStorageReference = mFirebaseStorage.getReference().child("chat_photos");
+
+        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
 
         // Initialize references to views.
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -156,6 +167,8 @@ public class MainActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
             }
         });
+
+        // Apply a filter which sets the editText length.
         mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(DEFAULT_MSG_LENGTH_LIMIT)});
 
         // Send button sends a message and clears the EditText.
@@ -203,6 +216,24 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+
+        // Create Remote Config Setting to enable developer mode.
+        // Fetching configs from the server is normally limited to 5 requests per hour.
+        // Enabling developer mode allows many more requests to be made per hour, so developers
+        // can test different config values during development.
+        FirebaseRemoteConfigSettings configSettings =
+                new FirebaseRemoteConfigSettings.Builder()
+                .setDeveloperModeEnabled(BuildConfig.DEBUG)
+                .build();
+        mFirebaseRemoteConfig.setConfigSettings(configSettings);
+
+        // Define default config values. Defaults are used when fetched config values are not
+        // available. Eg: if an error occurred fetching values from the server.
+        Map<String, Object> defaultConfigMap = new HashMap<>();
+        // Add messsage length.
+        defaultConfigMap.put(FRIENDLY_MSG_LENGTH_KEY, DEFAULT_MSG_LENGTH_LIMIT);
+        // Sets up Firebase remote config.
+        mFirebaseRemoteConfig.setDefaults(defaultConfigMap);
     }
 
     @Override
