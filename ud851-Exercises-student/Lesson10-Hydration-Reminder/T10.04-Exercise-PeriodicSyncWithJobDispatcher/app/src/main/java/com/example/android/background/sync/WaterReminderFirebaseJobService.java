@@ -15,8 +15,11 @@
  */
 package com.example.android.background.sync;
 
+import com.firebase.jobdispatcher.Job;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
+import com.firebase.jobdispatcher.RetryStrategy;
+
 import android.content.Context;
 import android.os.AsyncTask;
 
@@ -25,11 +28,22 @@ public class WaterReminderFirebaseJobService  extends JobService {
     private AsyncTask mBackgroundTask;
 
     // COMPLETED (4) Override onStartJob
+    /**
+     * The entry point to your Job. Implementations should offload work to another thread of
+     * execution as soon as possible.
+     *
+     * This is called by the Job Dispatcher to tell us we should start our job. Keep in mind this
+     * method is run on the application's main thread, so we need to offload work to a background
+     * thread.
+     *
+     * @return whether there is more work remaining.
+     */
     @Override
     public boolean onStartJob(final JobParameters params) {
 
         // COMPLETED (5) By default, jobs are executed on the main thread, so make an anonymous class extending
         //  AsyncTask called mBackgroundTask.
+        // Here's where we make an AsyncTask so that this is no longer on the main thread
         mBackgroundTask = new AsyncTask() {
 
             // COMPLETED (6) Override doInBackground
@@ -50,6 +64,13 @@ public class WaterReminderFirebaseJobService  extends JobService {
             @Override
             protected void onPostExecute(Object o) {
                 super.onPostExecute(o);
+
+                /*
+                 * Once the AsyncTask is finished, the job is finished. To inform JobManager that
+                 * you're done, you call jobFinished with the jobParamters that were passed to your
+                 * job and a boolean representing whether the job needs to be rescheduled. This is
+                 * usually if something didn't work and you want the job to try running again.
+                 */
                 jobFinished(params, false);
             }
         };
@@ -62,6 +83,14 @@ public class WaterReminderFirebaseJobService  extends JobService {
     }
 
     // COMPLETED (11) Override onStopJob
+    /**
+     * Called when the scheduling engine has decided to interrupt the execution of a running job,
+     * most likely because the runtime constraints associated with the job are no longer satisfied.
+     *
+     * @return whether the job should be retried
+     * @see Job.Builder#setRetryStrategy(RetryStrategy)
+     * @see RetryStrategy
+     */
     @Override
     public boolean onStopJob(JobParameters params) {
         // COMPLETED (12) If mBackgroundTask is valid, cancel it
